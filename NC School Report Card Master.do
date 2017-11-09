@@ -3,12 +3,18 @@
 ///////////////////////////Building a directory for my project/////////////////
 *******************************************************************************
 *******************************************************************************
+cd "E:/Dissertation/Data/NC Data/NC Data/"
 loc e="E:/Dissertation/Data/NC Data/NC Schools Report Card Data Excel/" //For all raw data file in excel*//
 loc s="E:/Dissertation/Data/NC Data/NC Schools Report Card Data Stata/" //For all merged data and datasets*//
 *******************************************************************************
 //////////////////////////End Directory Building///////////////////////////////
 
 /////Building a dataset from 2014 to 2016 using NC Report Card Data from those years.*//
+
+//and looking forward to an early draft of your brown bag seminar presentation!
+//i'd put in there a lot of graphs!
+//again i cannot check or run any of that becasue i dont have these files!
+//again just upload them to the google drive as zipped
 
 *****Start with bringing together the separate SPG files from 2014 to 2016*******
 import excel "`e'NC Schools SPG 2014.xlsx", sheet("Sheet1") firstrow
@@ -42,6 +48,8 @@ recode year2 (1=5)(2=6)(3=7)(4=8)(5=9)(6=10)(7=11)(8=12)(9=13)(10=14)(11=15)
 label define yr 1 2002 2 2003 3 2004 4 2005 5 2006 6 2007 7 2008 8 2009 9 2010 10 2011 11 2012 12 2013 13 2014 14 2015 15 2016
 label values year2 yr
 drop if year2 < 13
+//the above seems quite convoluted simply do it right away: 1=2002 2=2003 etcc
+
 drop year 
 rename year2 year
 order year
@@ -122,6 +130,9 @@ merge 1:1 SchoolCode year using "E:\Dissertation\Data\NC Data\NC Schools Report 
 drop _merge
 save "`s'Master NC School Report Card Dataset.dta", replace
 //Dropping some unneccesary variables*//
+//note that if you drop really many then can say keep instead!
+//or use * say drop lea_* to drop all that start this way
+
 drop lea_sat_participation_pct st_sat_participation_pct nat_sat_participation_pct lea_esea_attendance lea_ap_participation_pct st_ap_participation_pct lea_ap_pct_3_or_above st_ap_pct_3_or_above
 drop lea_sat_avg_score_num st_sat_avg_score_num nat_sat_avg_score_num
 drop lea_ib_participation_pct st_ib_participation_pct lea_ib_pct_4_or_above st_ib_pct_4_or_above
@@ -184,11 +195,10 @@ drop SummerProgram
 foreach denom in YearCohortGraduationRateDe AA {
 destring `denom', replace force
 }
-foreach percent in CohortGraduationRateStandard YearCohortGraduationRatePe AB {
+foreach percent in YearCohortGraduationRatePe AB {
 replace `percent' = "95" if `percent'==">95"
 destring `percent', replace force
 }
-rename CohortGraduationRateStandard gradrate1
 rename YearCohortGraduationRateDe grad4de
 rename YearCohortGraduationRatePe grad4pct
 rename AA grad5de
@@ -200,32 +210,22 @@ destring `denom', replace force
 
 save "E:/Dissertation/Data/NC Data/NC Schools Report Card Data Stata/Master NC School Report Card Dataset.dta", replace
 
+
 foreach percent in PerformanceCompositePercentCo PerformanceCompositePercentGr MathIPercentCollegeCareerRe MathIPercentGradeLevelProfi BiologyPercentCollegeCareerR BiologyPercentGradeLevelProf EnglishIIPercentCollegeCaree EnglishIIPercentGradeLevelP Grade3MathPercentCollegeCar Grade3MathPercentGradeLevel Grade4MathPercentCollegeCar Grade4MathPercentGradeLevel Grade5MathPercentCollegeCar Grade5MathPercentGradeLevel Grade6MathPercentCollegeCar Grade6MathPercentGradeLevel Grade7MathPercentCollegeCar Grade7MathPercentGradeLevel Grade8MathPercentCollegeCar Grade8MathPercentGradeLevel Grade3ReadingPercentCollege Grade3ReadingPercentGradeLe Grade4ReadingPercentCollege Grade4ReadingPercentGradeLe Grade5ReadingPercentCollege Grade5ReadingPercentGradeLe Grade6ReadingPercentCollege Grade6ReadingPercentGradeLe Grade7ReadingPercentCollege Grade7ReadingPercentGradeLe Grade8ReadingPercentCollege Grade8ReadingPercentGradeLe Grade5SciencePercentCollege Grade5SciencePercentGradeLe Grade8SciencePercentCollege Grade8SciencePercentGradeLe {
 replace `percent' = "95" if `percent'==">95"
 replace `percent' = "5" if `percent'=="<5"
 destring `percent', replace ignore("*")force
 }
 
-recode year 13=2014 14=2015 15=2016
-replace grad4pct=gradrate1 if grad4pct==. & year==2014
-
 save "E:/Dissertation/Data/NC Data/NC Schools Report Card Data Stata/Master NC School Report Card Dataset.dta", replace
 
+//good!
 rename sat_avg_score_num satavg
 rename sat_participation_pct satpct
 rename ap_participation_pct appart
 rename ap_pct_3_or_above appass
 rename ib_participation_pct ibpart
 rename ib_pct_4_or_above ibpass
-rename tchyrs_0thru3_pct ect
-rename tchyrs_4thru10_pct mct
-rename tchyrs_11plus_pct sct 
-rename flicensed_teach_pct flt
-rename _1yr_tchr_trnovr_pct oytt
-rename emer_prov_teach_pct ept 
-rename lateral_teach_pct ltmove
-rename highqual_class_pct hqc
-rename avg_daily_attend_pct ada 
 
 label var satavg "Average SAT score"
 label var satpct "Percent particpated in SAT test"
@@ -233,24 +233,3 @@ label var appart "Percent participated in AP program"
 label var appass "Percent of participants who received a 3 or above on AP exams"
 label var ibpart "Percent participated in IB program" 
 label var ibpass "Percent of particpants who receive a 4 or above on IB exams" 
-label var ect "percentage of teachers with 0-3 years of experience" 
-label var mct "percentage of teachers with 4-10 years of experience" 
-label var sct "percentage of teachers with 11 or more years of experience" 
-label var flt "percentage of fully licensed teachers" 
-label var oytt "one year teacher turnover percentage" 
-label var ept "percentage of teachers licensed under emergency provisional licenses"
-label var ltmove "percentage of teachers moving laterally into other positions" 
-label var hqc "percentage of high quality classes" 
-label var ada "average daily attendance (percent)" 
-
-foreach percent in satpct flicensed_teach_pct tchyrs_0thru3_pct tchyrs_4thru10_pct tchyrs_11plus_pct advance_dgr_pct _1yr_tchr_trnovr_pct emer_prov_teach_pct lateral_teach_pct highqual_class_pct avg_daily_attend_pct {
-replace `percent' = `percent'*100
-}
-replace spg = . if spg==0
-save "E:\Dissertation\Data\NC Data\NC Schools Report Card Data Stata\Master NC School Report Card Dataset.dta", replace
-
-
-
-
-
-
